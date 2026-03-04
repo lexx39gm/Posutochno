@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Календарь заселений квартир</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <h1>Календарь заселений</h1>
+      <p>Годовой план заселений по всем квартирам.</p>
+    </header>
+
+    <main class="container">
+      <section class="controls" aria-label="Панель управления">
+        <div class="control-group">
+          <label for="yearSelect">Год</label>
+          <select id="yearSelect" aria-label="Выбрать год"></select>
+        </div>
+
+        <div class="control-group">
+          <label for="apartmentSelect">Квартира в форме</label>
+          <select id="apartmentSelect" aria-label="Выбрать квартиру"></select>
+        </div>
+
+        <button id="manageApartmentsBtn" class="secondary" type="button">
+          Управление квартирами
+        </button>
+      </section>
+
+      <section class="booking-panel" aria-label="Форма заселения">
+        <h2>Добавить заселение</h2>
+        <form id="bookingForm">
+          <div class="form-grid">
+            <label>
+              Квартира
+              <select id="bookingApartment" required></select>
+            </label>
+            <label>
+              Клиент
+              <input id="clientName" type="text" placeholder="Имя клиента" required />
+            </label>
+            <label>
+              Дата заезда
+              <input id="startDate" type="date" required />
+            </label>
+            <label>
+              Дата выезда
+              <input id="endDate" type="date" required />
+            </label>
+            <label class="full-width">
+              Комментарий
+              <input id="comment" type="text" placeholder="Например: ранний заезд" />
+            </label>
+          </div>
+          <button type="submit">Сохранить заселение</button>
+        </form>
+
+        <h3>Заселения выбранной квартиры</h3>
+        <ul id="bookingsList" class="bookings-list"></ul>
+      </section>
+
+      <section>
+        <div class="legend">
+          <span><i class="cell-free"></i> Свободно</span>
+          <span><i class="cell-booked-light"></i> Занято (светлый оттенок)</span>
+          <span><i class="cell-booked"></i> Занято (средний оттенок)</span>
+          <span><i class="cell-booked-dark"></i> Занято (тёмный оттенок)</span>
+        </div>
+        <div id="yearCalendar" class="calendar" aria-label="Календарь на год"></div>
+      </section>
+    </main>
+
+    <dialog id="apartmentsDialog">
+      <form method="dialog" class="dialog-form" id="apartmentsForm">
+        <h2>Список квартир</h2>
+        <p>Добавляйте или удаляйте квартиры для календаря.</p>
+        <div class="inline-controls">
+          <input id="newApartmentName" type="text" placeholder="Название квартиры" />
+          <button id="addApartmentBtn" type="button">Добавить</button>
+        </div>
+        <ul id="apartmentsList" class="apartments-list"></ul>
+        <div class="dialog-actions">
+          <button value="cancel" type="submit">Закрыть</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
