@@ -1,4 +1,4 @@
-const STORAGE_KEY = "daily-rent-calendar-v1";
+const STORAGE_KEY = "daily-rent-calendar-v2";
 
 const defaultApartments = ["Квартира 1", "Квартира 2", "Квартира 3"];
 const monthNames = [
@@ -50,7 +50,6 @@ function init() {
     state.selectedApartmentId = apartmentSelect.value;
     bookingApartment.value = apartmentSelect.value;
     persist();
-    renderCalendar();
     renderBookingsList();
   });
 
@@ -58,7 +57,6 @@ function init() {
     state.selectedApartmentId = bookingApartment.value;
     apartmentSelect.value = bookingApartment.value;
     persist();
-    renderCalendar();
     renderBookingsList();
   });
 
@@ -90,20 +88,19 @@ function fillYearSelect() {
 
 function syncApartmentSelects() {
   if (state.apartments.length === 0) {
-    const newApartment = createApartment("Квартира 1");
-    state.apartments.push(newApartment);
+    state.apartments.push(createApartment("Квартира 1"));
   }
 
   if (!state.apartments.some((apartment) => apartment.id === state.selectedApartmentId)) {
     state.selectedApartmentId = state.apartments[0].id;
   }
 
-  const apartmentOptions = state.apartments
+  const options = state.apartments
     .map((apartment) => `<option value="${apartment.id}">${apartment.name}</option>`)
     .join("");
 
-  apartmentSelect.innerHTML = apartmentOptions;
-  bookingApartment.innerHTML = apartmentOptions;
+  apartmentSelect.innerHTML = options;
+  bookingApartment.innerHTML = options;
   apartmentSelect.value = state.selectedApartmentId;
   bookingApartment.value = state.selectedApartmentId;
 }
@@ -167,53 +164,68 @@ function renderCalendar() {
 }
 
 function createMonthCard(year, month) {
-  const template = document.getElementById("monthTemplate");
-  const fragment = template.content.cloneNode(true);
-
-  const card = fragment.querySelector(".month-card");
-  const title = fragment.querySelector("h3");
-  const tbody = fragment.querySelector("tbody");
-  title.textContent = `${monthNames[month]} ${year}`;
-
-  const firstDay = new Date(year, month, 1);
-  const startWeekday = (firstDay.getDay() + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const wrapper = document.createElement("article");
+  wrapper.className = "month-card";
 
-  let day = 1;
-  while (day <= daysInMonth) {
+  const title = document.createElement("h3");
+  title.textContent = `${monthNames[month]} ${year}`;
+  wrapper.appendChild(title);
+
+  const scroll = document.createElement("div");
+  scroll.className = "month-scroll";
+
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+
+  const apartmentHeader = document.createElement("th");
+  apartmentHeader.className = "apartment-col";
+  apartmentHeader.textContent = "Квартира";
+  headRow.appendChild(apartmentHeader);
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dayHead = document.createElement("th");
+    dayHead.textContent = String(day);
+    headRow.appendChild(dayHead);
+  }
+
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+
+  state.apartments.forEach((apartment) => {
     const row = document.createElement("tr");
+    const apartmentCell = document.createElement("td");
+    apartmentCell.className = "apartment-col";
+    apartmentCell.textContent = apartment.name;
+    row.appendChild(apartmentCell);
 
-    for (let col = 0; col < 7; col += 1) {
+    for (let day = 1; day <= daysInMonth; day += 1) {
       const cell = document.createElement("td");
-
-      if ((tbody.children.length === 0 && col < startWeekday) || day > daysInMonth) {
-        cell.className = "empty";
-      } else {
-        const date = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        const booking = findBookingByDate(state.selectedApartmentId, date);
-        cell.className = booking ? "booked" : "free";
-        cell.innerHTML = `<span class="day-num">${day}</span><span class="day-tip">${booking ? booking.client : "Свободно"}</span>`;
-        cell.title = booking
-          ? `${booking.client}${booking.comment ? ` — ${booking.comment}` : ""}`
-          : "Свободно";
-        day += 1;
-      }
-
+      const date = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const booking = findBookingByDate(apartment.id, date);
+      cell.className = booking ? "booked" : "free";
+      cell.title = booking
+        ? `${booking.client}${booking.comment ? " — " + booking.comment : ""}`
+        : "Свободно";
       row.appendChild(cell);
     }
 
     tbody.appendChild(row);
-  }
+  });
 
-  return card;
+  table.appendChild(tbody);
+  scroll.appendChild(table);
+  wrapper.appendChild(scroll);
+
+  return wrapper;
 }
 
 function findBookingByDate(apartmentId, date) {
   return state.bookings.find(
-    (booking) =>
-      booking.apartmentId === apartmentId &&
-      date >= booking.startDate &&
-      date <= booking.endDate,
+    (booking) => booking.apartmentId === apartmentId && date >= booking.startDate && date <= booking.endDate,
   );
 }
 
@@ -241,7 +253,7 @@ function renderBookingsList() {
         ${formatDate(booking.startDate)} — ${formatDate(booking.endDate)}
         ${booking.comment ? `<br /><small>${booking.comment}</small>` : ""}
       </div>
-      <button type="button" data-booking-id="${booking.id}" class="secondary">Удалить</button>
+      <button type="button" class="secondary">Удалить</button>
     `;
 
     item.querySelector("button").addEventListener("click", () => {

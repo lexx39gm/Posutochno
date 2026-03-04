@@ -40,8 +40,7 @@ body {
   display: grid;
   gap: 1rem;
   padding: 1rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: 100%;
 }
 
 .controls,
@@ -62,7 +61,7 @@ body {
 }
 
 .control-group {
-  min-width: 150px;
+  min-width: 170px;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
@@ -142,7 +141,7 @@ button.secondary {
 
 .calendar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.8rem;
 }
 
@@ -151,10 +150,13 @@ button.secondary {
   margin-bottom: 0.6rem;
 }
 
+.month-scroll {
+  overflow-x: auto;
+}
+
 table {
-  width: 100%;
+  width: max-content;
   border-collapse: collapse;
-  table-layout: fixed;
 }
 
 th,
@@ -162,16 +164,23 @@ td {
   border: 1px solid var(--border);
   text-align: center;
   padding: 0.25rem;
-  height: 32px;
+  min-width: 30px;
+  height: 30px;
+  font-size: 0.76rem;
+}
+
+th.apartment-col,
+td.apartment-col {
+  min-width: 170px;
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #fff;
 }
 
 th {
   background: #f3f4f6;
-  font-size: 0.85rem;
-}
-
-td.empty {
-  background: #f9fafb;
 }
 
 td.booked {
@@ -180,20 +189,6 @@ td.booked {
 
 td.free {
   background: var(--free);
-}
-
-td .day-num {
-  display: block;
-  font-size: 0.8rem;
-}
-
-td .day-tip {
-  display: block;
-  font-size: 0.68rem;
-  color: #374151;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .bookings-list,
@@ -240,11 +235,14 @@ td .day-tip {
 
   th,
   td {
-    padding: 0.15rem;
-    height: 28px;
+    min-width: 24px;
+    height: 26px;
+    padding: 0.1rem;
+    font-size: 0.67rem;
   }
 
-  td .day-tip {
-    display: none;
+  th.apartment-col,
+  td.apartment-col {
+    min-width: 120px;
   }
 }

@@ -9,7 +9,7 @@
   <body>
     <header class="page-header">
       <h1>Календарь заселений</h1>
-      <p>Управление посуточной арендой квартир на весь год.</p>
+      <p>Годовой план заселений по всем квартирам.</p>
     </header>
 
     <main class="container">
@@ -20,7 +20,7 @@
         </div>
 
         <div class="control-group">
-          <label for="apartmentSelect">Квартира</label>
+          <label for="apartmentSelect">Квартира в форме</label>
           <select id="apartmentSelect" aria-label="Выбрать квартиру"></select>
         </div>
 
@@ -84,26 +84,6 @@
         </div>
       </form>
     </dialog>
-
-    <template id="monthTemplate">
-      <article class="month-card">
-        <h3></h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Пн</th>
-              <th>Вт</th>
-              <th>Ср</th>
-              <th>Чт</th>
-              <th>Пт</th>
-              <th>Сб</th>
-              <th>Вс</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </article>
-    </template>
 
     <script src="app.js"></script>
   </body>
