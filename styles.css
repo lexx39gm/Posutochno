@@ -6,12 +6,11 @@
   --accent: #2563eb;
   --booked: #fca5a5;
   --free: #bbf7d0;
+  --past: #e5e7eb;
   --border: #e5e7eb;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -25,16 +24,9 @@ body {
   background: var(--card);
   border-bottom: 1px solid var(--border);
 }
-
 .page-header h1,
-.page-header p {
-  margin: 0;
-}
-
-.page-header p {
-  margin-top: 0.35rem;
-  color: var(--muted);
-}
+.page-header p { margin: 0; }
+.page-header p { margin-top: 0.35rem; color: var(--muted); }
 
 .container {
   display: grid;
@@ -67,14 +59,11 @@ body {
   gap: 0.3rem;
 }
 
-select,
-input,
-button {
-  font: inherit;
-}
+.control-group.compact { min-width: 220px; }
 
-select,
-input {
+select, input, button { font: inherit; }
+
+select, input {
   padding: 0.45rem 0.6rem;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -88,10 +77,7 @@ button {
   padding: 0.55rem 0.8rem;
   cursor: pointer;
 }
-
-button.secondary {
-  background: #4b5563;
-}
+button.secondary { background: #4b5563; }
 
 .form-grid {
   display: grid;
@@ -99,16 +85,12 @@ button.secondary {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   margin-bottom: 0.8rem;
 }
-
 .form-grid label {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
-
-.full-width {
-  grid-column: 1 / -1;
-}
+.full-width { grid-column: 1 / -1; }
 
 .legend {
   margin-bottom: 0.75rem;
@@ -116,57 +98,40 @@ button.secondary {
   gap: 1rem;
   flex-wrap: wrap;
 }
-
 .legend span {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
 }
-
 .legend i {
   width: 16px;
   height: 16px;
   border-radius: 4px;
   border: 1px solid var(--border);
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  font-weight: 700;
 }
 
-.cell-free {
-  background: var(--free);
-}
-
-.cell-booked-light {
-  background: #fecaca;
-}
-
-.cell-booked {
-  background: #fca5a5;
-}
-
-.cell-booked-dark {
-  background: #ef4444;
-}
+.cell-free { background: var(--free); }
+.cell-booked { background: var(--booked); }
+.cell-past { background: var(--past); }
+.bracket-preview { border: none !important; width: auto !important; }
 
 .calendar {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.8rem;
 }
-
 .month-card h3 {
   margin-top: 0;
   margin-bottom: 0.6rem;
 }
+.month-scroll { overflow-x: auto; }
 
-.month-scroll {
-  overflow-x: auto;
-}
-
-table {
-  width: max-content;
-  border-collapse: collapse;
-}
-
+table { width: max-content; border-collapse: collapse; }
 th,
 td {
   border: 1px solid var(--border);
@@ -187,27 +152,43 @@ td.apartment-col {
   background: #fff;
 }
 
-th {
-  background: #f3f4f6;
-}
+th { background: #f3f4f6; }
+td.booked { background: var(--booked); font-weight: 700; }
+td.free { background: var(--free); }
+td.past { background: var(--past); color: #6b7280; }
 
-td.booked {
-  background: var(--booked);
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
+.section-header h2 { margin: 0; }
 
-td.free {
-  background: var(--free);
+.bookings-by-apartment {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+.booking-group {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+.booking-group h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
 }
 
 .bookings-list,
 .apartments-list {
   list-style: none;
   padding: 0;
-  margin: 0.6rem 0 0;
+  margin: 0;
   display: grid;
   gap: 0.5rem;
 }
-
 .bookings-list li,
 .apartments-list li {
   border: 1px solid var(--border);
@@ -219,11 +200,7 @@ td.free {
   align-items: center;
 }
 
-.inline-controls {
-  display: flex;
-  gap: 0.45rem;
-}
-
+.inline-controls { display: flex; gap: 0.45rem; }
 .dialog-actions {
   margin-top: 0.8rem;
   display: flex;
@@ -231,15 +208,10 @@ td.free {
 }
 
 @media (max-width: 700px) {
-  .container {
-    padding: 0.6rem;
-  }
-
+  .container { padding: 0.6rem; }
   .controls,
   .booking-panel,
-  .month-card {
-    padding: 0.75rem;
-  }
+  .month-card { padding: 0.75rem; }
 
   th,
   td {
@@ -250,7 +222,5 @@ td.free {
   }
 
   th.apartment-col,
-  td.apartment-col {
-    min-width: 120px;
-  }
+  td.apartment-col { min-width: 120px; }
 }

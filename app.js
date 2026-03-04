@@ -1,4 +1,4 @@
-const STORAGE_KEY = "daily-rent-calendar-v2";
+const STORAGE_KEY = "daily-rent-calendar-v3";
 
 const defaultApartments = ["Квартира 1", "Квартира 2", "Квартира 3"];
 const monthNames = [
@@ -16,16 +16,16 @@ const monthNames = [
   "Декабрь",
 ];
 
-const bookingShades = ["#fecaca", "#fca5a5", "#f87171", "#ef4444", "#dc2626"];
-
 const state = loadState();
 
 const yearSelect = document.getElementById("yearSelect");
+const calendarModeSelect = document.getElementById("calendarModeSelect");
 const apartmentSelect = document.getElementById("apartmentSelect");
 const bookingApartment = document.getElementById("bookingApartment");
+const bookingsApartmentFilter = document.getElementById("bookingsApartmentFilter");
 const yearCalendar = document.getElementById("yearCalendar");
+const bookingsByApartment = document.getElementById("bookingsByApartment");
 const bookingForm = document.getElementById("bookingForm");
-const bookingsList = document.getElementById("bookingsList");
 const apartmentsDialog = document.getElementById("apartmentsDialog");
 const apartmentsForm = document.getElementById("apartmentsForm");
 const apartmentsList = document.getElementById("apartmentsList");
@@ -38,26 +38,39 @@ init();
 function init() {
   fillYearSelect();
   syncApartmentSelects();
+
+  calendarModeSelect.value = state.calendarMode;
+  bookingsApartmentFilter.value = state.bookingsFilter;
+  toggleApartmentSelectState();
+
   renderCalendar();
   renderBookingsList();
 
   yearSelect.addEventListener("change", () => {
     state.selectedYear = Number(yearSelect.value);
-    persist();
-    renderCalendar();
-    renderBookingsList();
+    persistAndRender();
+  });
+
+  calendarModeSelect.addEventListener("change", () => {
+    state.calendarMode = calendarModeSelect.value;
+    toggleApartmentSelectState();
+    persistAndRender();
   });
 
   apartmentSelect.addEventListener("change", () => {
     state.selectedApartmentId = apartmentSelect.value;
     bookingApartment.value = apartmentSelect.value;
-    persist();
-    renderBookingsList();
+    persistAndRender();
   });
 
   bookingApartment.addEventListener("change", () => {
     state.selectedApartmentId = bookingApartment.value;
     apartmentSelect.value = bookingApartment.value;
+    persistAndRender();
+  });
+
+  bookingsApartmentFilter.addEventListener("change", () => {
+    state.bookingsFilter = bookingsApartmentFilter.value;
     persist();
     renderBookingsList();
   });
@@ -71,6 +84,16 @@ function init() {
 
   addApartmentBtn.addEventListener("click", addApartment);
   apartmentsForm.addEventListener("submit", () => persist());
+}
+
+function persistAndRender() {
+  persist();
+  renderCalendar();
+  renderBookingsList();
+}
+
+function toggleApartmentSelectState() {
+  apartmentSelect.disabled = state.calendarMode === "all";
 }
 
 function fillYearSelect() {
@@ -97,14 +120,33 @@ function syncApartmentSelects() {
     state.selectedApartmentId = state.apartments[0].id;
   }
 
-  const options = state.apartments
+  const apartmentOptions = state.apartments
     .map((apartment) => `<option value="${apartment.id}">${apartment.name}</option>`)
     .join("");
 
-  apartmentSelect.innerHTML = options;
-  bookingApartment.innerHTML = options;
+  apartmentSelect.innerHTML = apartmentOptions;
+  bookingApartment.innerHTML = apartmentOptions;
   apartmentSelect.value = state.selectedApartmentId;
   bookingApartment.value = state.selectedApartmentId;
+
+  const filterOptions = [`<option value="all">Все квартиры</option>`]
+    .concat(
+      state.apartments.map(
+        (apartment) => `<option value="${apartment.id}">${apartment.name}</option>`,
+      ),
+    )
+    .join("");
+
+  bookingsApartmentFilter.innerHTML = filterOptions;
+
+  if (
+    state.bookingsFilter !== "all" &&
+    !state.apartments.some((apartment) => apartment.id === state.bookingsFilter)
+  ) {
+    state.bookingsFilter = "all";
+  }
+
+  bookingsApartmentFilter.value = state.bookingsFilter;
 }
 
 function handleBookingSubmit(event) {
@@ -152,9 +194,7 @@ function handleBookingSubmit(event) {
 
   bookingForm.reset();
   bookingApartment.value = apartmentId;
-  persist();
-  renderCalendar();
-  renderBookingsList();
+  persistAndRender();
 }
 
 function renderCalendar() {
@@ -196,8 +236,12 @@ function createMonthCard(year, month) {
   table.appendChild(thead);
 
   const tbody = document.createElement("tbody");
+  const apartmentsToShow =
+    state.calendarMode === "all"
+      ? state.apartments
+      : state.apartments.filter((apartment) => apartment.id === state.selectedApartmentId);
 
-  state.apartments.forEach((apartment) => {
+  apartmentsToShow.forEach((apartment) => {
     const row = document.createElement("tr");
     const apartmentCell = document.createElement("td");
     apartmentCell.className = "apartment-col";
@@ -206,12 +250,17 @@ function createMonthCard(year, month) {
 
     for (let day = 1; day <= daysInMonth; day += 1) {
       const cell = document.createElement("td");
-      const date = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const date = toIsoDate(year, month, day);
       const booking = findBookingByDate(apartment.id, date);
-      cell.className = booking ? "booked" : "free";
+      const isPast = date < todayIso();
+
       if (booking) {
-        cell.style.backgroundColor = getBookingShade(booking.id);
+        cell.className = isPast ? "booked past" : "booked";
+        cell.textContent = getBoundaryMark(booking, date);
+      } else {
+        cell.className = isPast ? "free past" : "free";
       }
+
       cell.title = booking
         ? `${booking.client}${booking.comment ? " — " + booking.comment : ""}`
         : "Свободно";
@@ -228,57 +277,76 @@ function createMonthCard(year, month) {
   return wrapper;
 }
 
+function getBoundaryMark(booking, date) {
+  const isStart = date === booking.startDate;
+  const isEnd = date === booking.endDate;
+
+  if (isStart && isEnd) {
+    return "()";
+  }
+  if (isStart) {
+    return "(";
+  }
+  if (isEnd) {
+    return ")";
+  }
+  return "";
+}
+
 function findBookingByDate(apartmentId, date) {
   return state.bookings.find(
     (booking) => booking.apartmentId === apartmentId && date >= booking.startDate && date <= booking.endDate,
   );
 }
 
-function getBookingShade(bookingId) {
-  let hash = 0;
-  for (let i = 0; i < bookingId.length; i += 1) {
-    hash = (hash << 5) - hash + bookingId.charCodeAt(i);
-    hash |= 0;
-  }
-
-  return bookingShades[Math.abs(hash) % bookingShades.length];
-}
-
 function renderBookingsList() {
-  const selectedApartment = state.apartments.find(
-    (apartment) => apartment.id === state.selectedApartmentId,
-  );
+  bookingsByApartment.innerHTML = "";
 
-  const currentBookings = state.bookings
-    .filter((booking) => booking.apartmentId === state.selectedApartmentId)
-    .sort((a, b) => a.startDate.localeCompare(b.startDate));
+  const apartmentsToRender =
+    state.bookingsFilter === "all"
+      ? state.apartments
+      : state.apartments.filter((apartment) => apartment.id === state.bookingsFilter);
 
-  bookingsList.innerHTML = "";
+  apartmentsToRender.forEach((apartment) => {
+    const group = document.createElement("article");
+    group.className = "booking-group";
 
-  if (currentBookings.length === 0) {
-    bookingsList.innerHTML = `<li>Для квартиры «${selectedApartment.name}» пока нет заселений.</li>`;
-    return;
-  }
+    const title = document.createElement("h3");
+    title.textContent = apartment.name;
+    group.appendChild(title);
 
-  currentBookings.forEach((booking) => {
-    const item = document.createElement("li");
-    item.innerHTML = `
-      <div>
-        <strong>${booking.client}</strong><br />
-        ${formatDate(booking.startDate)} — ${formatDate(booking.endDate)}
-        ${booking.comment ? `<br /><small>${booking.comment}</small>` : ""}
-      </div>
-      <button type="button" class="secondary">Удалить</button>
-    `;
+    const list = document.createElement("ul");
+    list.className = "bookings-list";
 
-    item.querySelector("button").addEventListener("click", () => {
-      state.bookings = state.bookings.filter((entry) => entry.id !== booking.id);
-      persist();
-      renderCalendar();
-      renderBookingsList();
-    });
+    const currentBookings = state.bookings
+      .filter((booking) => booking.apartmentId === apartment.id)
+      .sort((a, b) => a.startDate.localeCompare(b.startDate));
 
-    bookingsList.appendChild(item);
+    if (currentBookings.length === 0) {
+      list.innerHTML = `<li>Нет заселений.</li>`;
+    } else {
+      currentBookings.forEach((booking) => {
+        const item = document.createElement("li");
+        item.innerHTML = `
+          <div>
+            <strong>${booking.client}</strong><br />
+            ${formatDate(booking.startDate)} — ${formatDate(booking.endDate)}
+            ${booking.comment ? `<br /><small>${booking.comment}</small>` : ""}
+          </div>
+          <button type="button" class="secondary">Удалить</button>
+        `;
+
+        item.querySelector("button").addEventListener("click", () => {
+          state.bookings = state.bookings.filter((entry) => entry.id !== booking.id);
+          persistAndRender();
+        });
+
+        list.appendChild(item);
+      });
+    }
+
+    group.appendChild(list);
+    bookingsByApartment.appendChild(group);
   });
 }
 
@@ -307,14 +375,12 @@ function addApartment() {
   }
 
   state.apartments.push(createApartment(name));
-  newApartmentNameInput.value = "";
   state.selectedApartmentId = state.apartments[state.apartments.length - 1].id;
+  newApartmentNameInput.value = "";
 
   syncApartmentSelects();
-  persist();
   renderApartmentsDialog();
-  renderCalendar();
-  renderBookingsList();
+  persistAndRender();
 }
 
 function removeApartment(apartmentId) {
@@ -331,10 +397,8 @@ function removeApartment(apartmentId) {
   }
 
   syncApartmentSelects();
-  persist();
   renderApartmentsDialog();
-  renderCalendar();
-  renderBookingsList();
+  persistAndRender();
 }
 
 function createApartment(name) {
@@ -343,6 +407,14 @@ function createApartment(name) {
 
 function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString("ru-RU");
+}
+
+function toIsoDate(year, month, day) {
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
 }
 
 function loadState() {
@@ -355,6 +427,8 @@ function loadState() {
     return {
       selectedYear: parsed.selectedYear || new Date().getFullYear(),
       selectedApartmentId: parsed.selectedApartmentId || "",
+      calendarMode: parsed.calendarMode || "all",
+      bookingsFilter: parsed.bookingsFilter || "all",
       apartments: Array.isArray(parsed.apartments) ? parsed.apartments : [],
       bookings: Array.isArray(parsed.bookings) ? parsed.bookings : [],
     };
@@ -363,6 +437,8 @@ function loadState() {
     return {
       selectedYear: new Date().getFullYear(),
       selectedApartmentId: apartments[0].id,
+      calendarMode: "all",
+      bookingsFilter: "all",
       apartments,
       bookings: [],
     };

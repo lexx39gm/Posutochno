@@ -20,7 +20,15 @@
         </div>
 
         <div class="control-group">
-          <label for="apartmentSelect">Квартира в форме</label>
+          <label for="calendarModeSelect">Режим календаря</label>
+          <select id="calendarModeSelect" aria-label="Выбрать режим календаря">
+            <option value="all">Все квартиры</option>
+            <option value="single">Одна квартира</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="apartmentSelect">Квартира</label>
           <select id="apartmentSelect" aria-label="Выбрать квартиру"></select>
         </div>
 
@@ -56,19 +64,29 @@
           </div>
           <button type="submit">Сохранить заселение</button>
         </form>
-
-        <h3>Заселения выбранной квартиры</h3>
-        <ul id="bookingsList" class="bookings-list"></ul>
       </section>
 
       <section>
         <div class="legend">
           <span><i class="cell-free"></i> Свободно</span>
-          <span><i class="cell-booked-light"></i> Занято (светлый оттенок)</span>
-          <span><i class="cell-booked"></i> Занято (средний оттенок)</span>
-          <span><i class="cell-booked-dark"></i> Занято (тёмный оттенок)</span>
+          <span><i class="cell-booked"></i> Занято</span>
+          <span><i class="cell-past"></i> Прошедшая дата</span>
+          <span><i class="bracket-preview">(</i><i class="bracket-preview">)</i> Начало/конец заселения</span>
         </div>
         <div id="yearCalendar" class="calendar" aria-label="Календарь на год"></div>
+      </section>
+
+      <section class="booking-panel" aria-label="Список заселений">
+        <div class="section-header">
+          <h2>Список заселений</h2>
+          <div class="control-group compact">
+            <label for="bookingsApartmentFilter">Показать</label>
+            <select id="bookingsApartmentFilter" aria-label="Фильтр списка заселений по квартире">
+              <option value="all">Все квартиры</option>
+            </select>
+          </div>
+        </div>
+        <div id="bookingsByApartment" class="bookings-by-apartment"></div>
       </section>
     </main>
 
