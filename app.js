@@ -1,4 +1,4 @@
-const STORAGE_KEY = "daily-rent-calendar-v3";
+const STORAGE_KEY = "daily-rent-calendar-v4";
 
 const defaultApartments = ["Квартира 1", "Квартира 2", "Квартира 3"];
 const monthNames = [
@@ -15,6 +15,7 @@ const monthNames = [
   "Ноябрь",
   "Декабрь",
 ];
+const weekdayNames = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 
 const state = loadState();
 
@@ -207,6 +208,9 @@ function renderCalendar() {
 
 function createMonthCard(year, month) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDay = new Date(year, month, 1);
+  const firstWeekday = (firstDay.getDay() + 6) % 7;
+
   const wrapper = document.createElement("article");
   wrapper.className = "month-card";
 
@@ -214,23 +218,15 @@ function createMonthCard(year, month) {
   title.textContent = `${monthNames[month]} ${year}`;
   wrapper.appendChild(title);
 
-  const scroll = document.createElement("div");
-  scroll.className = "month-scroll";
-
   const table = document.createElement("table");
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
 
-  const apartmentHeader = document.createElement("th");
-  apartmentHeader.className = "apartment-col";
-  apartmentHeader.textContent = "Квартира";
-  headRow.appendChild(apartmentHeader);
-
-  for (let day = 1; day <= daysInMonth; day += 1) {
+  weekdayNames.forEach((dayName) => {
     const dayHead = document.createElement("th");
-    dayHead.textContent = String(day);
+    dayHead.textContent = dayName;
     headRow.appendChild(dayHead);
-  }
+  });
 
   thead.appendChild(headRow);
   table.appendChild(thead);
@@ -241,38 +237,61 @@ function createMonthCard(year, month) {
       ? state.apartments
       : state.apartments.filter((apartment) => apartment.id === state.selectedApartmentId);
 
-  apartmentsToShow.forEach((apartment) => {
+  let day = 1;
+  let rowIndex = 0;
+
+  while (day <= daysInMonth) {
     const row = document.createElement("tr");
-    const apartmentCell = document.createElement("td");
-    apartmentCell.className = "apartment-col";
-    apartmentCell.textContent = apartment.name;
-    row.appendChild(apartmentCell);
 
-    for (let day = 1; day <= daysInMonth; day += 1) {
+    for (let col = 0; col < 7; col += 1) {
       const cell = document.createElement("td");
-      const date = toIsoDate(year, month, day);
-      const booking = findBookingByDate(apartment.id, date);
-      const isPast = date < todayIso();
+      cell.className = "day-cell";
 
-      if (booking) {
-        cell.className = isPast ? "booked past" : "booked";
-        cell.textContent = getBoundaryMark(booking, date);
+      if ((rowIndex === 0 && col < firstWeekday) || day > daysInMonth) {
+        cell.classList.add("empty-cell");
       } else {
-        cell.className = isPast ? "free past" : "free";
+        const date = toIsoDate(year, month, day);
+        const dayHeader = document.createElement("div");
+        dayHeader.className = "day-number";
+        dayHeader.textContent = String(day);
+        cell.appendChild(dayHeader);
+
+        const apartmentsContainer = document.createElement("div");
+        apartmentsContainer.className = "day-apartments";
+
+        apartmentsToShow.forEach((apartment) => {
+          const booking = findBookingByDate(apartment.id, date);
+          const isPast = date < todayIso();
+
+          const apartmentLine = document.createElement("div");
+          apartmentLine.className = "apartment-slice";
+          apartmentLine.classList.add(booking ? "booked" : "free");
+          if (isPast) {
+            apartmentLine.classList.add("past");
+          }
+
+          const mark = booking ? getBoundaryMark(booking, date) : "";
+          apartmentLine.textContent = `${apartment.name} ${mark}`.trim();
+          apartmentLine.title = booking
+            ? `${apartment.name}: ${booking.client}${booking.comment ? " — " + booking.comment : ""}`
+            : `${apartment.name}: свободно`;
+
+          apartmentsContainer.appendChild(apartmentLine);
+        });
+
+        cell.appendChild(apartmentsContainer);
+        day += 1;
       }
 
-      cell.title = booking
-        ? `${booking.client}${booking.comment ? " — " + booking.comment : ""}`
-        : "Свободно";
       row.appendChild(cell);
     }
 
     tbody.appendChild(row);
-  });
+    rowIndex += 1;
+  }
 
   table.appendChild(tbody);
-  scroll.appendChild(table);
-  wrapper.appendChild(scroll);
+  wrapper.appendChild(table);
 
   return wrapper;
 }
