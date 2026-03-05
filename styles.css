@@ -1,0 +1,257 @@
+:root {
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --booked: #fca5a5;
+  --free: #bbf7d0;
+  --past: #e5e7eb;
+  --border: #e5e7eb;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.page-header {
+  padding: 1.25rem 1rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+.page-header h1,
+.page-header p { margin: 0; }
+.page-header p { margin-top: 0.35rem; color: var(--muted); }
+
+.container {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.controls,
+.booking-panel,
+.month-card,
+.dialog-form {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.control-group {
+  min-width: 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.control-group.compact { min-width: 220px; }
+
+select, input, button { font: inherit; }
+
+select, input {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+button {
+  border: none;
+  background: var(--accent);
+  color: white;
+  border-radius: 8px;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+}
+button.secondary { background: #4b5563; }
+
+.form-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-bottom: 0.8rem;
+}
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.full-width { grid-column: 1 / -1; }
+
+.legend {
+  margin-bottom: 0.75rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.legend i {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.cell-free { background: var(--free); }
+.cell-booked { background: var(--booked); }
+.cell-past { background: var(--past); }
+.bracket-preview { border: none !important; width: auto !important; }
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 0.8rem;
+}
+
+.month-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th,
+td {
+  border: 1px solid var(--border);
+  vertical-align: top;
+}
+
+th {
+  background: #f3f4f6;
+  text-align: center;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.2rem;
+}
+
+.day-cell {
+  height: 110px;
+  padding: 0.2rem;
+  background: #fff;
+}
+
+.empty-cell {
+  background: #f9fafb;
+}
+
+.day-number {
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.day-apartments {
+  display: grid;
+  gap: 2px;
+}
+
+.apartment-slice {
+  border-radius: 4px;
+  padding: 0.1rem 0.2rem;
+  font-size: 0.63rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.apartment-slice.booked { background: var(--booked); font-weight: 700; }
+.apartment-slice.free { background: var(--free); }
+.apartment-slice.past { background: var(--past); color: #6b7280; }
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.section-header h2 { margin: 0; }
+
+.bookings-by-apartment {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+.booking-group {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+.booking-group h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.bookings-list,
+.apartments-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.bookings-list li,
+.apartments-list li {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.inline-controls { display: flex; gap: 0.45rem; }
+.dialog-actions {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 700px) {
+  .container { padding: 0.6rem; }
+  .controls,
+  .booking-panel,
+  .month-card { padding: 0.75rem; }
+
+  .calendar {
+    grid-template-columns: 1fr;
+  }
+
+  .day-cell {
+    height: 98px;
+    padding: 0.15rem;
+  }
+
+  th {
+    font-size: 0.7rem;
+  }
+
+  .apartment-slice {
+    font-size: 0.58rem;
+  }
+}
